@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CRM</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <a class="logo" href="#!/">Simple CRM</a>
+    <nav>
+      <a href="#!/users">Users</a>
+      <a href="#!/companies">Companies</a>
+    </nav>
+  </header>
+
+  <div id="app" class="page"></div>
+  
+  <script src="js/utils.js"></script>
+  <script src="js/rest.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/pages/notfound.js"></script>
+  <script src="js/pages/users.js"></script>
+  <script src="js/pages/user.js"></script>
+  <script src="js/pages/companies.js"></script>
+  <script src="js/pages/company.js"></script>
+  <script>
+    const api = new REST("/api");
+    const app = new App(
+      [
+        ["/users/:id", UserPage],
+        ["/users", UsersPage],
+        ["/companies/:id", CompanyPage],
+        ["/companies", CompaniesPage],
+        ["/", UsersPage],
+        ["*", NotFoundPage],
+      ], 
+      document.querySelector("#app"),
+    );
+  </script>
+  
+</body>
+</html>
+
