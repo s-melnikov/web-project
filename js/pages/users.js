@@ -18,10 +18,14 @@ class UsersPage extends View {
     }
     const body = users.map((user) => `
       <tr>
-        <td><a href="#!/users/${user.id}">${user.first_name}</a></td>
-        <td><a href="#!/users/${user.id}">${user.last_name}</a></td>
-        <td><a href="mailto:${user.email}">${user.email}</a></td>
-        <td><a href="tel:${user.tel}">${user.tel}</a></td>
+        <td>${user.first_name}</td>
+        <td>${user.last_name}</td>
+        <td>${user.email}</td>
+        <td>${user.tel}</td>
+        <td>
+          <a href="#!/users/${user.id}">Edit</a>
+          <span data-user-id="${user.id}" class="link">Remove</span>
+        </td>
       </tr>
     `).join("");
     return `
@@ -32,6 +36,7 @@ class UsersPage extends View {
             <th>Last name</th>
             <th>Email</th>
             <th>Tel</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>${body}</tbody>

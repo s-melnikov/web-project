@@ -34,7 +34,6 @@ class UserPage extends View {
     const hasErrors = validateForm(form, UserPage.FORM_CONSTRAINS);
     if (hasErrors) return;
     const { id, ...values } = getFormData(form);
-    console.log({ id })
     const usersApi = api.collection("users");
     const promise = id ? usersApi.update(id, values) : usersApi.add(values);
     promise.then((response) => {
@@ -44,6 +43,9 @@ class UserPage extends View {
       });
       if (id) return;
       location.hash = `!/users/${response.result}`;
+      api.collection("users").getOne(response.result).then((response) => {
+        this.setState({ user: response.result });
+      });
     });
   }
 
@@ -56,7 +58,7 @@ class UserPage extends View {
       `<option value="${company.id}">${company.name}</optipon>`).join("");
     return `
       <div class="container">
-        <div class="page-title">Users</div>
+        <div class="page-title u-mb">Users</div>
         <form class="user-form">
           <div class="u-row">
             <div class="u-col-4">
