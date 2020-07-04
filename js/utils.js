@@ -54,13 +54,8 @@ function getFormData(form) {
 }
 
 function showNotification({ title, message }) {
-  let container = document.querySelector(".notifications");
-  if (!container) {
-    container = document.createElement("div");
-    container.classList.add("notifications");
-    document.body.appendChild(container);
-  }
-  let notification = document.createElement("div");
+  const container = document.querySelector(".notifications");
+  const notification = document.createElement("div");
   notification.classList.add("notification");
   notification.innerHTML = `
     <div class="title">${title}</div>
@@ -77,4 +72,32 @@ function showNotification({ title, message }) {
   setTimeout(remove, 3000);
 }
 
-
+function showConfirmDialog({ title, message, onConfirm }) {
+  const dialog = document.querySelector(".dialog");
+  const close = document.querySelector(".dialog-close");
+  const cancel = document.querySelector(".dialog-actions .cancel");
+  const handleCloseClick = (event) => {
+    console.log("handleCloseClick")
+    close.removeEventListener("click", handleCloseClick);
+    cancel.removeEventListener("click", handleCloseClick);
+    dialog.classList.remove("showed");
+  }
+  close.addEventListener("click", handleCloseClick);
+  cancel.addEventListener("click", handleCloseClick);
+  if (title) {
+    dialog.querySelector(".dialog-title").innerHTML = title;
+  }
+  if (message) {
+    dialog.querySelector(".dialog-content").innerHTML = message;
+  }
+  if (onConfirm) {
+    const button = dialog.querySelector(".dialog-actions .submit");
+    const handleClick = (event) => {
+      button.removeEventListener("click", handleClick);
+      handleCloseClick(event);
+      setTimeout(() => onConfirm(event), 0);
+    }
+    button.addEventListener("click", handleClick);
+  }
+  dialog.classList.add("showed");
+}

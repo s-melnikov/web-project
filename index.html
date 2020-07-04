@@ -6,7 +6,6 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
   <header>
     <a class="logo" href="#!/">Simple CRM</a>
     <nav>
@@ -14,9 +13,21 @@
       <a href="#!/companies">Companies</a>
     </nav>
   </header>
-
-  <div id="app" class="page"></div>
-  
+  <div id="app" class="page"></div>  
+  <div class="notifications"></div>
+  <div class="dialog">
+    <div class="dialog-window">
+      <div class="dialog-header">
+        <div class="dialog-title"></div>
+        <div class="dialog-close">&times;</div>
+      </div>
+      <div class="dialog-content"></div>
+      <div class="dialog-actions">
+        <button class="button cancel">Cancel</button>
+        <button class="button primary submit">Submit</button>
+      </div>
+    </div>
+  </div>
   <script src="js/utils.js"></script>
   <script src="js/rest.js"></script>
   <script src="js/app.js"></script>
@@ -38,8 +49,7 @@
       ], 
       document.querySelector("#app"),
     );
-  </script>
-  
+  </script>  
 </body>
 </html>
 

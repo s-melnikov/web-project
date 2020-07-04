@@ -369,6 +369,93 @@ header nav a {
     background-color: rgba(0, 0, 0, 0.3);
   }
 }
+.dialog {
+  font-family: var(--font-family);
+  font-size: 14px;
+  line-height: 24px;
+  box-sizing: border-box;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 10;
+  background-color: rgba(255, 255, 255, 0);
+  display: none;
+}
+.dialog-window {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background-color: #fff;
+  border-radius: 6px;
+  width: 360px;
+  box-shadow: 0 0 24px 0 rgba(0, 0, 0, 0.15);
+  max-height: 100%;
+  opacity: 0;
+  transform: translate3d(-50%, -100%, 0);
+  animation: dialogWindowAnimation 0.25s forwards;
+}
+.dialog-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 64px;
+  padding: 0 48px 0 24px;
+}
+.dialog-title {
+  font-weight: bold;
+  font-size: 18px;
+}
+.dialog-close {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  right: 0;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0.75;
+  font-size: 24px;
+}
+.dialog-close:hover {
+  opacity: 1;
+}
+.dialog-content {
+  padding: 8px 24px;
+  height: 100%;
+  overflow: auto;
+}
+.dialog-actions {
+  padding: 8px 24px 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+.dialog-actions .button {
+  margin-left: 8px;
+}
+.dialog.showed {
+  display: block;
+  animation: dialogBgAnimation 0.25s forwards;  
+}
+.dialog.showed .dialog-window {
+  animation: dialogWindowAnimation 0.25s forwards; 
+}
+@keyframes dialogBgAnimation {
+  to {
+    background-color: rgba(255, 255, 255, 0.75);
+  }
+}
+@keyframes dialogWindowAnimation {
+  to {
+    opacity: 1;
+    transform: translate3d(-50%, -50%, 0);
+  }
+}
 
 .u-row {
   display: flex;
