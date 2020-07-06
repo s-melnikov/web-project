@@ -3,9 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <title>CRM</title>
+  <style>
+    [cloak] {
+      visibility: hidden;
+      opacity: 0;
+      display: none;
+    }
+  </style>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body cloak>
   <header>
     <a class="logo" href="#!/">Simple CRM</a>
     <nav>
@@ -29,6 +36,7 @@
     </div>
   </div>
   <script src="js/utils.js"></script>
+  <script src="js/common.js"></script>
   <script src="js/rest.js"></script>
   <script src="js/app.js"></script>
   <script src="js/pages/notfound.js"></script>
@@ -37,6 +45,8 @@
   <script src="js/pages/companies.js"></script>
   <script src="js/pages/company.js"></script>
   <script>
+    const DEFAULT_PER_PAGE = 10;
+    
     const api = new REST("/api");
     const app = new App(
       [

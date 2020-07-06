@@ -2,13 +2,54 @@ class UsersPage extends View {
   constructor(args) {
     super(args);
     this.state = { users: null };
+    this.fetchUsers();
+    this.events = {
+      "click [data-action=remove]": this.handleRemoveClick,
+      "change .per-page": this.handlePerPageChange,
+    }
+  }
+
+  fetchUsers() {
+    const params = getQueryParams();
+    const page = Number(params.page) || 1;
+    const perPage = Number(params.perPage) || DEFAULT_PER_PAGE;
+    const limit = perPage;
+    const offset = (page - 1) * perPage;
     api.collection("users")
-      .get({ limit: 20 })
+      .get({ offset, limit })
       .then((response) => {
         this.setState({ 
           users: response.result, 
+          usersCount: response.count, 
         });
       });
+  }
+
+  handleRemoveClick(event) {
+    const { users } = this.state;
+    const userId = event.target.getAttribute("data-user-id");
+    const user = users.find((user) => user.id === userId);
+    showConfirmDialog({
+      title: "Warning!",
+      message: `Are you sure you want to delete user "${user.first_name} ${user.last_name}"`,
+      onConfirm: () => {
+        api.collection("users").delete(userId).then(() => {
+          showNotification({ 
+            title: "System message",
+            message: "User deleted!",
+          });
+          this.fetchUsers();
+        });
+      },
+    });
+  }
+
+  handlePerPageChange(event) {
+    const params = getQueryParams();
+    location.search = objectToQueryString({
+      ...params,
+      perPage: event.target.value,
+    });
   }
 
   renderList() {
@@ -24,7 +65,7 @@ class UsersPage extends View {
         <td>${user.tel}</td>
         <td>
           <a href="#!/users/${user.id}">Edit</a>
-          <span data-user-id="${user.id}" class="link">Remove</span>
+          <span data-action="remove" data-user-id="${user.id}" class="link">Remove</span>
         </td>
       </tr>
     `).join("");
@@ -45,6 +86,8 @@ class UsersPage extends View {
   }
 
   render() {
+    const { usersCount } = this.state;
+    const { page } = getQueryParams();
     return `
       <div class="container">
         <div class="u-row u-mb u-flex-centered-y">
@@ -55,6 +98,9 @@ class UsersPage extends View {
         </div>
         <div class="user-list">
           ${this.renderList()}
+        </div>
+        <div class="u-mt">
+          ${Pagination({ count: usersCount, current: page })}
         </div>
       </div>
     `;

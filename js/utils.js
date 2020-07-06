@@ -53,9 +53,31 @@ function getFormData(form) {
   return result;
 }
 
+function parseQueryString(string) {
+  const vars = {};
+  if (string) {
+    string.replace(/^\?/, "").split("&").forEach((keyValuePair) => {
+      const [key, value] = keyValuePair.split("=");
+      vars[key] = value ? window.decodeURIComponent(value) : true;
+    });
+  }
+  return vars;
+}
+
+function objectToQueryString(params) {
+  return Object
+    .entries(params)
+    .filter(([prop, val]) => prop && val)
+    .map(([prop, val]) => `${encodeURIComponent(prop)}${(val === true ? "" : `=${encodeURIComponent(val)}`)}`).join("&");
+}
+
+function getQueryParams() {
+  return parseQueryString(location.search.slice(1));
+}
+
 function showNotification({ title, message }) {
   const container = document.querySelector(".notifications");
-  const notification = document.createElement("div");
+  let notification = document.createElement("div");
   notification.classList.add("notification");
   notification.innerHTML = `
     <div class="title">${title}</div>
@@ -77,7 +99,6 @@ function showConfirmDialog({ title, message, onConfirm }) {
   const close = document.querySelector(".dialog-close");
   const cancel = document.querySelector(".dialog-actions .cancel");
   const handleCloseClick = (event) => {
-    console.log("handleCloseClick")
     close.removeEventListener("click", handleCloseClick);
     cancel.removeEventListener("click", handleCloseClick);
     dialog.classList.remove("showed");

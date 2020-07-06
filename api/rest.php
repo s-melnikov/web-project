@@ -59,18 +59,24 @@ class REST {
 
     if ($id) $sql .= " WHERE id = $id";
 
-    if ($limit) $sql .= " LIMIT $limit";
+    if (!$id) {
+      if ($limit) $sql .= " LIMIT $limit";
 
-    if ($limit && $offset) $sql .= " OFFSET $offset";
+      if ($limit && $offset) $sql .= " OFFSET $offset";
+    }
 
     $result = $this->db->query($sql);    
     if ($result === false) {
       $this->error('Wrong SQL: ' . $sql . ' Error: ' . $this->db->errorInfo()[2]);
     } else {
+      $data = [];
       $result = $result->fetchAll(PDO::FETCH_ASSOC);
-      $this->response([
-        'result' => $id ? $result[0] : $result,
-      ]);
+      $data['result'] = $id ? $result[0] : $result;
+      if (!$id && $limit) {
+        $result = $this->db->query("SELECT COUNT(*) FROM $entity");
+        $data['count'] = $result->fetchColumn();
+      }      
+      $this->response($data);
     }    
   }
 

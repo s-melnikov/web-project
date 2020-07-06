@@ -206,15 +206,15 @@ header nav a {
   text-align: center;
   user-select: none;
 }
-.button:hover {
+.button:not([disabled]):hover {
   background-color: var(--color-gray-lightest);
 }
-.button:active {
+.button:not([disabled]):active {
   border-color: var(--color-gray-light);
   background-color: var(--color-gray-light);
   box-shadow: none;
 }
-.button:focus {
+.button:not([disabled]):focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 2px #CDF1FA;
 }
@@ -223,15 +223,23 @@ header nav a {
   color: var(--color-white);
   border: none;  
 }
-.button.primary:hover {
+.button.primary:not([disabled]):hover {
   opacity: 0.9;
 }
-.button.primary:activee {
+.button.primary:not([disabled]):activee {
   opacity: 0.95;
 }
-.button.primary:focus {
+.button.primary:not([disabled]):focus {
   opacity: 0.95;
   box-shadow: 0 0 0 2px var(--color-primary-light);
+}
+.button[disabled] {
+  background-color: #e0e0e0;
+  border-color: #e0e0e0;
+  cursor: default;
+}
+.button[disabled]:hover {
+  opacity: 1;
 }
 .container {
   width: 100%;
@@ -445,6 +453,16 @@ header nav a {
 .dialog.showed .dialog-window {
   animation: dialogWindowAnimation 0.25s forwards; 
 }
+.pagination {
+  display: flex;
+}
+.pagination .button {
+  margin-right: 8px;
+}
+.pagination .prev,
+.pagination .next {
+  font-family: monospace;
+}
 @keyframes dialogBgAnimation {
   to {
     background-color: rgba(255, 255, 255, 0.75);
@@ -456,7 +474,6 @@ header nav a {
     transform: translate3d(-50%, -50%, 0);
   }
 }
-
 .u-row {
   display: flex;
   flex-wrap: wrap;
@@ -519,6 +536,16 @@ header nav a {
   max-width: 100%
 }
 
+.u-flex {
+  display: flex;
+  align-items: center;
+}
+.u-mr {
+  margin-right: 16px;
+}
+.u-mt {
+  margin-top: 16px;
+}
 .u-mb {
   margin-bottom: 16px;
 }

@@ -1,11 +1,53 @@
 class App {
   constructor(routes, rootEl) {
-    this.controller = new Controller(routes, rootEl);
+    this.rootEl = rootEl;
+    this.handleHashChange = this.handleHashChange.bind(this);
+    window.addEventListener("hashchange", this.handleHashChange);
+    this.routes = routes.map(([prop, view]) => {
+      const keys = [];
+      const key = this.trim(prop);
+      const regexp = key.replace(/:(\w+)/g, (match, group) => {
+        keys.push(group);
+        return "([^\s\/]+)";
+      }).replace("*", "\.+");
+      return [regexp, keys, view];
+    });
+    this.handleHashChange();
+    document.body.removeAttribute("cloak");
   }
-}
 
-class Model {
+  handleHashChange() {
+    this.hash = this.trim(location.hash.slice(2));
+    const [view, params] = this.routes.reduce((finded, [regexp, keys, view]) => {
+      if (finded) return finded;
+      const match = new RegExp(regexp).exec(this.hash);
+      if (!match) return null;
+      const params = match.slice(1).reduce((res, value, index) => {
+        return { ...res, [keys[index]]: value };
+      }, {});
+      return [view, params];
+    }, null);
 
+    this.render(view, params);
+  }
+
+  render(view, params) {
+    if (this.currentViewClass !== view) {
+      this.currentViewClass = view;
+      if (this.currentViewInstance) {
+        this.currentViewInstance.destructor();
+      }
+      this.currentViewInstance = new view({
+        rootEl: this.rootEl,
+        props: { params },
+      });
+    }
+    this.currentViewInstance.update();
+  }
+
+  trim(string, sign = "/") {
+    return string.replace(new RegExp(`^${sign}+|${sign}+$`, "g"), "");
+  }
 }
 
 class View {
@@ -74,54 +116,3 @@ class View {
 }
 
 View.delegateEventSplitter = /^(\S+)\s*(.*)$/;
-
-class Controller {
-  constructor(routes, rootEl) {
-    this.rootEl = rootEl;
-    this.handleHashChange = this.handleHashChange.bind(this);
-    window.addEventListener("hashchange", this.handleHashChange);
-    this.routes = routes.map(([prop, view]) => {
-      const keys = [];
-      const key = this.trim(prop);
-      const regexp = key.replace(/:(\w+)/g, (match, group) => {
-        keys.push(group);
-        return "([^\s\/]+)";
-      }).replace("*", "\.+");
-      return [regexp, keys, view];
-    });
-    this.handleHashChange();
-  }
-
-  handleHashChange() {
-    this.hash = this.trim(location.hash.slice(2));
-    const [view, params] = this.routes.reduce((finded, [regexp, keys, view]) => {
-      if (finded) return finded;
-      const match = new RegExp(regexp).exec(this.hash);
-      if (!match) return null;
-      const params = match.slice(1).reduce((res, value, index) => {
-        return { ...res, [keys[index]]: value };
-      }, {});
-      return [view, params];
-    }, null);
-
-    this.render(view, params);
-  }
-
-  render(view, params) {
-    if (this.currentViewClass !== view) {
-      this.currentViewClass = view;
-      if (this.currentViewInstance) {
-        this.currentViewInstance.destructor();
-      }
-      this.currentViewInstance = new view({
-        rootEl: this.rootEl,
-        props: { params },
-      });
-    }
-    this.currentViewInstance.update();
-  }
-
-  trim(string, sign = "/") {
-    return string.replace(new RegExp(`^${sign}+|${sign}+$`, "g"), "");
-  }
-}
