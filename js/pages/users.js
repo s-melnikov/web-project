@@ -10,19 +10,22 @@ class UsersPage extends View {
   }
 
   fetchUsers() {
-    const params = getQueryParams();
+    const { params } = this.props;
     const page = Number(params.page) || 1;
-    const perPage = Number(params.perPage) || DEFAULT_PER_PAGE;
-    const limit = perPage;
-    const offset = (page - 1) * perPage;
+    const offset = (page - 1) * DEFAULT_PER_PAGE;
     api.collection("users")
-      .get({ offset, limit })
+      .get({ offset, limit: DEFAULT_PER_PAGE })
       .then((response) => {
         this.setState({ 
           users: response.result, 
           usersCount: response.count, 
         });
       });
+  }
+
+  onUpdate(oldProps) {
+    if (oldProps.params.page === this.props.params.page) return;
+    this.fetchUsers();
   }
 
   handleRemoveClick(event) {
@@ -87,7 +90,7 @@ class UsersPage extends View {
 
   render() {
     const { usersCount } = this.state;
-    const { page } = getQueryParams();
+    const { params } = this.props;
     return `
       <div class="container">
         <div class="u-row u-mb u-flex-centered-y">
@@ -100,7 +103,11 @@ class UsersPage extends View {
           ${this.renderList()}
         </div>
         <div class="u-mt">
-          ${Pagination({ count: usersCount, current: page })}
+          ${Pagination({ 
+            base: "#!/users/page-", 
+            count: usersCount, 
+            current: params.page, 
+          })}
         </div>
       </div>
     `;

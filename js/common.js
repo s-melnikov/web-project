@@ -19,7 +19,7 @@ function PerPageSelect(params) {
 }
 function PaginationItem(params) {
   return `<a 
-    href="?page=${params.page}" 
+    href="${params.base}${params.page}" 
     class="button"
     ${params.disabled ? "disabled" : ""}>${params.label}</a>`;
 }
@@ -47,11 +47,13 @@ function Pagination(params) {
     startPage = 1;
   }
   const list = [];
+  console.log({ startPage, endPage });
   for (let i = startPage; i < endPage; i++) {
     list.push(PaginationItem({
       page: i,
       disabled: current === i,
       label: i,
+      base: params.base,
     }));
   }
   return `<div class="pagination">
@@ -59,12 +61,14 @@ function Pagination(params) {
       page: 1, 
       disabled: current === 1, 
       label: "First", 
+      base: params.base,
     })}
     ${list.join("")}
     ${PaginationItem({ 
       page: pageCount, 
       disabled: current === pageCount, 
       label: "Last", 
+      base: params.base,
     })}
   </div>`;
 }

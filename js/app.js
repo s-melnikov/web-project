@@ -42,7 +42,7 @@ class App {
         props: { params },
       });
     }
-    this.currentViewInstance.update();
+    this.currentViewInstance.update({ params });
   }
 
   trim(string, sign = "/") {
@@ -58,7 +58,9 @@ class View {
   }
 
   setState(state) {
+    const oldState = this.state;
     this.state = { ...this.state, ...state };
+    this.onUpdate(this.props, oldState);    
     this.update();
   }
 
@@ -107,12 +109,17 @@ class View {
     });
   }
 
-  update() {    
+  update(props) {    
+    const oldProps = this.props;
+    this.props = { ...this.props, ...props };
+    this.onUpdate(oldProps, this.state);    
     const html = this.render();
     this.undelegateEvents();
     this.rootEl.innerHTML = html;
     this.delegateEvents();
   }
+
+  onUpdate() {}
 }
 
 View.delegateEventSplitter = /^(\S+)\s*(.*)$/;

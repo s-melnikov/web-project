@@ -458,6 +458,9 @@ header nav a {
 }
 .pagination .button {
   margin-right: 8px;
+  width: 40px;
+  padding: 0;
+  justify-content: center;
 }
 .pagination .prev,
 .pagination .next {

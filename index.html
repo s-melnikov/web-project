@@ -49,9 +49,11 @@
     
     const api = new REST("/api");
     const app = new App(
-      [
+      [      
+        ["/users/page-:page", UsersPage],
         ["/users/:id", UserPage],
         ["/users", UsersPage],
+        ["/companies/page-:page", CompaniesPage],
         ["/companies/:id", CompanyPage],
         ["/companies", CompaniesPage],
         ["/", UsersPage],
