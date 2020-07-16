@@ -51,7 +51,7 @@
         this.currentViewInstance.destructor();
       }
       this.currentViewInstance = new view(props);
-      this.currentViewInstance.rootEl = this.rootEl
+      this.currentViewInstance.rootEl = this.rootEl;
     }
     this.currentViewInstance.update(props);
   }

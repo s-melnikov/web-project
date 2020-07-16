@@ -2,31 +2,29 @@ class UserPage extends View {
   constructor(args) {
     super(args);
     const { params: { id } } = this.props;
-    this.state = { 
-      user: null, 
-      companies: null, 
-    };    
-    this.events = {
-      "click .submit": this.handleSubmitClick,
+    this.state = {
+      user: null,
+      companies: null,
     };
     if (id === UserPage.NEW_USER_ID) {
-      this.setState({ 
-        user: {
-          id: "",
-          first_name: "",
-          last_name: "",
-          tel: "",
-          email: "",
-        },
-      });
+      this.state.user = {
+        id: "",
+        first_name: "",
+        last_name: "",
+        tel: "",
+        email: "",
+      };
     } else {
       api.collection("users").getOne(id).then((response) => {
         this.setState({ user: response.result });
       });
-    }    
+    }
     api.collection("companies").get({ fields: "name,id" }).then((response) => {
       this.setState({ companies: response.result });
     });
+    this.events = {
+      "click .submit": this.handleSubmitClick,
+    };
   }
 
   handleSubmitClick(event) {
@@ -51,10 +49,11 @@ class UserPage extends View {
 
   render() {
     const { user, companies } = this.state;
+    console.log(1, user)
     if (!user) {
       return `<div class="loading"></div>`;
     }
-    const options = companies && companies.map((company) => 
+    const options = companies && companies.map((company) =>
       `<option value="${company.id}">${company.name}</optipon>`).join("");
     return `
       <div class="container">
@@ -65,7 +64,7 @@ class UserPage extends View {
               <div class="content">
 
                 <input type="hidden" name="id" value="${user.id}">
-                
+
                 <label class="u-mb">
                   <span class="label">First name</span>
                   <input type="text" name="first_name" value="${user.first_name}">
@@ -92,8 +91,8 @@ class UserPage extends View {
                     <option value="">Select company</optipon>
                     ${options}
                   </select>
-                </label>   
-      
+                </label>
+
               </div>
               <div class="u-row">
                 <div class="u-col"></div>
@@ -105,7 +104,7 @@ class UserPage extends View {
                 </div>
               </div>
             </div>
-          </div>          
+          </div>
         </form>
       </div>
     `;
