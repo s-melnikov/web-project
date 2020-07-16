@@ -53,11 +53,21 @@ class REST {
 
     $limit = params("limit");
     $offset = params("offset");
+    $sortBy = params("sortBy");
+    $order = params("order");
     $fields = params("fields", "*");
 
     $sql = "SELECT $fields FROM $entity";
 
     if ($id) $sql .= " WHERE id = $id";
+
+    if ($sortBy) {
+      $sql .= " ORDER BY $sortBy COLLATE NOCASE";
+
+      if ($order) {
+        $sql .= " $order";        
+      }
+    }
 
     if (!$id) {
       if ($limit) $sql .= " LIMIT $limit";

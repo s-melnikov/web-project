@@ -1,4 +1,15 @@
-class App {
+ class App {
+  static parseQuery(string) {
+    const vars = {};
+    if (string) {
+      string.replace(/^\?/, "").split("&").forEach((keyValuePair) => {
+        const [key, value] = keyValuePair.split("=");
+        vars[key] = value ? window.decodeURIComponent(value) : true;
+      });
+    }
+    return vars;
+  }
+
   constructor(routes, rootEl) {
     this.rootEl = rootEl;
     this.handleHashChange = this.handleHashChange.bind(this);
@@ -17,32 +28,32 @@ class App {
   }
 
   handleHashChange() {
-    this.hash = this.trim(location.hash.slice(2));
+    const [path, searchString] = location.hash.split("?");
+    const hash = path.slice(2);
+    const search = App.parseQuery(searchString);
     const [view, params] = this.routes.reduce((finded, [regexp, keys, view]) => {
       if (finded) return finded;
-      const match = new RegExp(regexp).exec(this.hash);
+      const match = new RegExp(regexp).exec(hash);
       if (!match) return null;
       const params = match.slice(1).reduce((res, value, index) => {
         return { ...res, [keys[index]]: value };
       }, {});
       return [view, params];
     }, null);
-
-    this.render(view, params);
+    this.render({ view, params, search });
   }
 
-  render(view, params) {
+  render({ view, params, search }) {
+    const props = { params, search };
     if (this.currentViewClass !== view) {
       this.currentViewClass = view;
       if (this.currentViewInstance) {
         this.currentViewInstance.destructor();
       }
-      this.currentViewInstance = new view({
-        rootEl: this.rootEl,
-        props: { params },
-      });
+      this.currentViewInstance = new view(props);
+      this.currentViewInstance.rootEl = this.rootEl
     }
-    this.currentViewInstance.update({ params });
+    this.currentViewInstance.update(props);
   }
 
   trim(string, sign = "/") {
@@ -51,8 +62,7 @@ class App {
 }
 
 class View {
-  constructor({ rootEl, props }) {
-    this.rootEl = rootEl;
+  constructor(props) {
     this.props = props;
     this.handlers = [];
   }
@@ -60,7 +70,7 @@ class View {
   setState(state) {
     const oldState = this.state;
     this.state = { ...this.state, ...state };
-    this.onUpdate(this.props, oldState);    
+    this.onUpdate(this.props, oldState);
     this.update();
   }
 
@@ -80,8 +90,8 @@ class View {
     const handler = (event) => {
       // loop parent nodes from the target to the delegation node
       for (
-        let target = event.target; 
-        target && target != event.currentTarget; 
+        let target = event.target;
+        target && target != event.currentTarget;
         target = target.parentNode
       ) {
         if (target.matches(selector)) {
@@ -109,10 +119,10 @@ class View {
     });
   }
 
-  update(props) {    
+  update(props) {
     const oldProps = this.props;
     this.props = { ...this.props, ...props };
-    this.onUpdate(oldProps, this.state);    
+    this.onUpdate(oldProps, this.state);
     const html = this.render();
     this.undelegateEvents();
     this.rootEl.innerHTML = html;

@@ -5,26 +5,24 @@ class UsersPage extends View {
     this.fetchUsers();
     this.events = {
       "click [data-action=remove]": this.handleRemoveClick,
-      "change .per-page": this.handlePerPageChange,
     }
   }
 
   fetchUsers() {
-    const { params } = this.props;
-    const page = Number(params.page) || 1;
-    const offset = (page - 1) * DEFAULT_PER_PAGE;
+    const { search: { page, sortBy, order } } = this.props;
+    const offset = ((+page || 1) - 1) * DEFAULT_PER_PAGE;
     api.collection("users")
-      .get({ offset, limit: DEFAULT_PER_PAGE })
+      .get({ offset, limit: DEFAULT_PER_PAGE, sortBy, order })
       .then((response) => {
-        this.setState({ 
-          users: response.result, 
-          usersCount: response.count, 
+        this.setState({
+          users: response.result,
+          usersCount: response.count,
         });
       });
   }
 
   onUpdate(oldProps) {
-    if (oldProps.params.page === this.props.params.page) return;
+    if (JSON.stringify(oldProps.search) === JSON.stringify(this.props.search)) return;
     this.fetchUsers();
   }
 
@@ -37,7 +35,7 @@ class UsersPage extends View {
       message: `Are you sure you want to delete user "${user.first_name} ${user.last_name}"`,
       onConfirm: () => {
         api.collection("users").delete(userId).then(() => {
-          showNotification({ 
+          showNotification({
             title: "System message",
             message: "User deleted!",
           });
@@ -47,50 +45,54 @@ class UsersPage extends View {
     });
   }
 
-  handlePerPageChange(event) {
-    const params = getQueryParams();
-    location.search = objectToQueryString({
-      ...params,
-      perPage: event.target.value,
-    });
-  }
-
   renderList() {
+    const { search, path } = this.props;
     const { users } = this.state;
     if (!users) {
       return `<div class="loading"></div>`
     }
+    const headers = [
+      ["First name", "first_name"],
+      ["Last name", "last_name"],
+      ["Tel", "tel"],
+      ["Email", "email"],
+      [],
+    ];
     const body = users.map((user) => `
-      <tr>
-        <td>${user.first_name}</td>
-        <td>${user.last_name}</td>
-        <td>${user.email}</td>
-        <td>${user.tel}</td>
-        <td>
+      <div class="tr">
+        <div class="td">${user.first_name}</div>
+        <div class="td">${user.last_name}</div>
+        <div class="td">${user.tel}</div>
+        <div class="td">${user.email}</div>
+        <div class="td">
           <a href="#!/users/${user.id}">Edit</a>
           <span data-action="remove" data-user-id="${user.id}" class="link">Remove</span>
-        </td>
-      </tr>
+        </div>
+      </div>
     `).join("");
     return `
-      <table>
-        <thead>
-          <tr>
-            <th>First name</th>
-            <th>Last name</th>
-            <th>Email</th>
-            <th>Tel</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>${body}</tbody>
-      </table>
+      <div class="table">
+        <div class="thead">
+          <div class="tr">
+            ${TableHeaders({ headers, path: "users", search })}
+          </div>
+        </div>
+        <div class="tbody">${body}</div>
+      </div>
     `;
   }
 
-  render() {
+  renderFromTo() {
+    const { params: { page = 1 } } = this.props;
     const { usersCount } = this.state;
-    const { params } = this.props;
+    const from = (page - 1) * DEFAULT_PER_PAGE + 1;
+    const to = page * DEFAULT_PER_PAGE;
+    return `${from} - ${to > usersCount ? usersCount : to} from ${usersCount}`;
+  }
+
+  render() {
+    const { search, path } = this.props;
+    const { usersCount } = this.state;
     return `
       <div class="container">
         <div class="u-row u-mb u-flex-centered-y">
@@ -102,12 +104,19 @@ class UsersPage extends View {
         <div class="user-list">
           ${this.renderList()}
         </div>
-        <div class="u-mt">
-          ${Pagination({ 
-            base: "#!/users/page-", 
-            count: usersCount, 
-            current: params.page, 
-          })}
+        <div class="u-row u-mt">
+          <div class="u-col-auto">
+            ${Pagination({
+              count: usersCount,
+              maxPages: 9,
+              perPage: DEFAULT_PER_PAGE,
+              path: "users",
+              search,
+            })}
+          </div>
+          <div class="u-col-auto u-flex-centered-y">
+            ${this.renderFromTo()}
+          </div>
         </div>
       </div>
     `;

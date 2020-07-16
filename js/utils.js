@@ -53,26 +53,8 @@ function getFormData(form) {
   return result;
 }
 
-function parseQueryString(string) {
-  const vars = {};
-  if (string) {
-    string.replace(/^\?/, "").split("&").forEach((keyValuePair) => {
-      const [key, value] = keyValuePair.split("=");
-      vars[key] = value ? window.decodeURIComponent(value) : true;
-    });
-  }
-  return vars;
-}
-
-function objectToQueryString(params) {
-  return Object
-    .entries(params)
-    .filter(([prop, val]) => prop && val)
-    .map(([prop, val]) => `${encodeURIComponent(prop)}${(val === true ? "" : `=${encodeURIComponent(val)}`)}`).join("&");
-}
-
-function getQueryParams() {
-  return parseQueryString(location.search.slice(1));
+function toQuery(params) {
+  return Object.keys(params).map((key) => `${key}=${encodeURIComponent(params[key])}`).join("&");
 }
 
 function showNotification({ title, message }) {

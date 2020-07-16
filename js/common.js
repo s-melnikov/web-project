@@ -1,42 +1,38 @@
 function Select(params) {
   return `<select class="${params.class || ""}">${
-    params.options.map((option) => 
-      `<option value="${option.value}" ${(option.value === params.value) ? "selected" : ""}>${option.label}</option>`)
+    params.options.map((option) =>
+    `<option
+      value="${option.value}"
+      ${(option.value === params.value) ? "selected" : ""}>
+      ${option.label}
+    </option>`)
   }</select>`;
 }
 
-const PER_PAGE_OPTIONS = [
-  { value: "10", label: "10" },
-  { value: "25", label: "25" },
-  { value: "50", label: "50" },
-  { value: "100", label: "100" },
-];
-function PerPageSelect(params) {
-  params = params || {};
-  params.value = params.value || DEFAULT_PER_PAGE;
-  params.options = PER_PAGE_OPTIONS;
-  return Select(params);
-}
-function PaginationItem(params) {
-  return `<a 
-    href="${params.base}${params.page}" 
+function PaginationItem({ path, page, search, label, disabled }) {
+  return `<a
+    href="#!/${path}?${toQuery({ ...search, page })}"
     class="button"
-    ${params.disabled ? "disabled" : ""}>${params.label}</a>`;
+    ${disabled ? "disabled" : ""}>${label}</a>`;
 }
+
 function Pagination(params) {
-  params = params || {};
-  const count = Number(params.count) || 0;
-  const current = Number(params.current) || 1;
-  const perPage = Number(params.perPage) || DEFAULT_PER_PAGE;
-  const maxPages = 5;
+  const {
+    count,
+    perPage,
+    maxPages,
+    path,
+    search,
+  } = params;
+  const page = Number(search.page) || 1;
   const pageCount = (count && perPage) ? Math.ceil(count / perPage) : 0;
   if (pageCount < 2) return "";
   let endPage = 1 + maxPages;
   let startPage = 1;
-  const half = Math.ceil(maxPages / 2);  
-  if (current > half) {
-    startPage = current - half;
-    endPage = current + half;
+  const half = maxPages / 2;
+  if (page > half) {
+    startPage = Math.ceil(page - half);
+    endPage = Math.ceil(page + half);
     if (endPage >= pageCount) {
       endPage = 1 + pageCount;
       startPage = 1 + pageCount - maxPages;
@@ -47,28 +43,45 @@ function Pagination(params) {
     startPage = 1;
   }
   const list = [];
-  console.log({ startPage, endPage });
   for (let i = startPage; i < endPage; i++) {
     list.push(PaginationItem({
       page: i,
-      disabled: current === i,
+      disabled: page === i,
       label: i,
-      base: params.base,
+      path,
+      search,
     }));
   }
   return `<div class="pagination">
-    ${PaginationItem({ 
-      page: 1, 
-      disabled: current === 1, 
-      label: "First", 
-      base: params.base,
+    ${PaginationItem({
+      page: 1,
+      disabled: page === 1,
+      label: "First",
+      path,
+      search,
     })}
     ${list.join("")}
-    ${PaginationItem({ 
-      page: pageCount, 
-      disabled: current === pageCount, 
-      label: "Last", 
-      base: params.base,
+    ${PaginationItem({
+      page: pageCount,
+      disabled: page === pageCount,
+      label: "Last",
+      path,
+      search,
     })}
   </div>`;
+}
+
+function TableHeader({ label = "", prop, path, search }) {
+  const sortBy = prop;
+  const active = search.sortBy === sortBy;
+  const order = (!active || search.order === "desc") ? "asc" : "desc";
+  return `<div class="td">
+    <a
+      href="#!/${path}?${toQuery({ ...search, sortBy, order, page: 1 })}"
+      ${active ? `class="active"` : ""}>${label}</a>
+  </div>`;
+}
+
+function TableHeaders({ headers, path, search }) {
+  return headers.map(([label, prop]) => TableHeader({ label, prop, path, search })).join("");
 }
