@@ -20,7 +20,7 @@
       <a href="#!/companies">Companies</a>
     </nav>
   </header>
-  <div id="app" class="page"></div>  
+  <div id="app" class="page"></div>
   <div class="notifications"></div>
   <div class="dialog">
     <div class="dialog-window">
@@ -45,11 +45,11 @@
   <script src="js/pages/companies.js"></script>
   <script src="js/pages/company.js"></script>
   <script>
-    const DEFAULT_PER_PAGE = 10;
-    
+    const DEFAULT_PER_PAGE = 20;
+
     const api = new REST("/api");
     const app = new App(
-      [      
+      [
         ["/users/page-:page", UsersPage],
         ["/users/:id", UserPage],
         ["/users", UsersPage],
@@ -58,10 +58,10 @@
         ["/companies", CompaniesPage],
         ["/", UsersPage],
         ["*", NotFoundPage],
-      ], 
+      ],
       document.querySelector("#app"),
     );
-  </script>  
+  </script>
 </body>
 </html>
 

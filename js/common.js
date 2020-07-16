@@ -71,10 +71,13 @@ function Pagination(params) {
   </div>`;
 }
 
-function TableHeader({ label = "", prop, path, search }) {
+function TableHeader({ label, prop, path, search }) {
   const sortBy = prop;
   const active = search.sortBy === sortBy;
   const order = (!active || search.order === "desc") ? "asc" : "desc";
+  if (!label) {
+    return `<div class="td"></div>`;
+  }
   return `<div class="td">
     <a
       href="#!/${path}?${toQuery({ ...search, sortBy, order, page: 1 })}"

@@ -21,8 +21,8 @@ class UsersPage extends View {
       });
   }
 
-  onUpdate(oldProps) {
-    if (JSON.stringify(oldProps.search) === JSON.stringify(this.props.search)) return;
+  onUpdate({ search }) {
+    if (shallowCompare(search, this.props.search)) return;
     this.fetchUsers();
   }
 
@@ -65,8 +65,10 @@ class UsersPage extends View {
         <div class="td">${user.tel}</div>
         <div class="td">${user.email}</div>
         <div class="td">
-          <a href="#!/users/${user.id}">Edit</a>
-          <span data-action="remove" data-user-id="${user.id}" class="link">Remove</span>
+          <div class="actions">
+            <a href="#!/users/${user.id}" class="action">Edit</a>
+            <span data-action="remove" data-user-id="${user.id}" class="action link">Remove</span>
+          </div>
         </div>
       </div>
     `).join("");

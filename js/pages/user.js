@@ -49,7 +49,6 @@ class UserPage extends View {
 
   render() {
     const { user, companies } = this.state;
-    console.log(1, user)
     if (!user) {
       return `<div class="loading"></div>`;
     }

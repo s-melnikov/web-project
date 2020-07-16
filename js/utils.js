@@ -43,7 +43,7 @@ function validateForm(form, constrains) {
 }
 
 function getFormData(form) {
-  const fields = form.querySelectorAll("input, select, textarea");  
+  const fields = form.querySelectorAll("input, select, textarea");
   const result = {};
   fields.forEach((field) => {
     const name = field.name;
@@ -104,3 +104,9 @@ function showConfirmDialog({ title, message, onConfirm }) {
   }
   dialog.classList.add("showed");
 }
+
+const shallowCompare = (objA, objB) => {
+  const keysA = Object.keys(objA);
+  const keysB = Object.keys(objB);
+  return keysA.length === keysB.length && keysA.every((prop) => objA[prop] === objB[prop]);
+};
