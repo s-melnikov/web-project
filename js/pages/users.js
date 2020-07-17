@@ -46,7 +46,7 @@ class UsersPage extends View {
   }
 
   renderList() {
-    const { search, path } = this.props;
+    const { search } = this.props;
     const { users } = this.state;
     if (!users) {
       return `<div class="loading"></div>`
@@ -85,7 +85,7 @@ class UsersPage extends View {
   }
 
   renderFromTo() {
-    const { params: { page = 1 } } = this.props;
+    const { search: { page = 1 } } = this.props;
     const { usersCount } = this.state;
     const from = (page - 1) * DEFAULT_PER_PAGE + 1;
     const to = page * DEFAULT_PER_PAGE;
@@ -93,7 +93,7 @@ class UsersPage extends View {
   }
 
   render() {
-    const { search, path } = this.props;
+    const { search } = this.props;
     const { usersCount } = this.state;
     return `
       <div class="container">

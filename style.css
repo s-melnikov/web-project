@@ -358,24 +358,22 @@ header nav a {
 .notifications .notification .close:hover {
   background-color: #e0e0e0;
 }
-.user-list .table .tr .td:nth-child(5) {
+.table .actions {
+  opacity: 0;
+  transition: opacity .15s;
   text-align: right;
   text-transform: uppercase;
   font-size: 11px;
   font-weight: 600;
 }
-.table .actions {
-  opacity: 0;
-  transition: opacity .15s;
+.table .tr .actions .action {
+  margin-left: 8px;
+}
+.table .tr .actions .action.link {
+  color: var(--color-danger);
 }
 .table .tr:hover .actions {
   opacity: 1;
-}
-.table .tr:hover .actions .action {
-  margin-left: 8px;
-}
-.table .tr:hover .actions .action.link {
-  color: var(--color-danger);
 }
 .user-list .table .td:nth-child(1),
 .user-list .table .td:nth-child(2) {

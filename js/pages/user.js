@@ -56,7 +56,6 @@ class UserPage extends View {
       `<option value="${company.id}">${company.name}</optipon>`).join("");
     return `
       <div class="container">
-        <div class="page-title u-mb">Users</div>
         <form class="user-form">
           <div class="u-row">
             <div class="u-col-4">

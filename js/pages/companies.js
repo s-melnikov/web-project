@@ -18,6 +18,7 @@ class CompaniesPage extends View {
           companies: response.result,
           companiesCount: response.count,
         });
+        this.rootEl.scrollTop = 0;
       });
   }
 
@@ -29,7 +30,7 @@ class CompaniesPage extends View {
   handleRemoveClick(event) {
     const { companies } = this.state;
     const companyId = event.target.getAttribute("data-company-id");
-    const company = users.find((company) => company.id === companyId);
+    const company = companies.find((company) => company.id === companyId);
     showConfirmDialog({
       title: "Warning!",
       message: `Are you sure you want to delete company "${company.name}"`,
@@ -45,47 +46,8 @@ class CompaniesPage extends View {
     });
   }
 
-  renderList({ result }) {
-    const node = this.querySelector(".compamies-list");
-    const body = result.map((company) => `
-      <tr>
-        <td><a href="#!/companies/${company.id}">${company.name}</a></td>
-        <td><a href="https://${company.id}" target="_blank">${company.site}</a></td>
-        <td><a href="tel:${company.tel}">${company.tel}</a></td>
-        <td>
-          <a href="https://maps.google.com/maps?q=${encodeURIComponent(company.country)}" target="_blank">
-            ${company.country}
-          </a>
-        </td>
-      </tr>
-    `).join("");
-    const innerHTML = `
-      <table>
-        <thead>
-          <tr>
-            <th>Company</th>
-            <th>Site</th>
-            <th>Tel</th>
-            <th>Country</th>
-          </tr>
-        </thead>
-        <tbody>${body}</tbody>
-      </table>
-    `;
-    node.innerHTML = innerHTML;
-  }
-
-  render() {
-    return `
-      <div class="container">
-        <div class="page-title">Compamies</div>
-        <div class="compamies-list"></div>
-      </div>
-    `;
-  }
-
   renderList() {
-    const { search, path } = this.props;
+    const { search } = this.props;
     const { companies } = this.state;
     if (!companies) {
       return `<div class="loading"></div>`
@@ -124,7 +86,7 @@ class CompaniesPage extends View {
   }
 
   renderFromTo() {
-    const { params: { page = 1 } } = this.props;
+    const { search: { page = 1 } } = this.props;
     const { companiesCount } = this.state;
     const from = (page - 1) * DEFAULT_PER_PAGE + 1;
     const to = page * DEFAULT_PER_PAGE;
@@ -132,7 +94,7 @@ class CompaniesPage extends View {
   }
 
   render() {
-    const { search, path } = this.props;
+    const { search } = this.props;
     const { companiesCount } = this.state;
     return `
       <div class="container">
