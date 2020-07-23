@@ -20,10 +20,10 @@ class CompanyPage extends View {
       api.collection("companies").getOne(id).then((response) => {
         this.setState({ company: response.result });
       });
+      api.collection("users").get({ fields: "id,first_name,last_name", where: { company: id } }).then((response) => {
+        this.setState({ users: response.result });
+      });
     }
-    // api.collection("companies").get({ fields: "name,id" }).then((response) => {
-    //   this.setState({ companies: response.result });
-    // });
     this.events = {
       "click .submit": this.handleSubmitClick,
     };
@@ -31,36 +31,44 @@ class CompanyPage extends View {
 
   handleSubmitClick(event) {
     const form = this.querySelector("form");
-    const hasErrors = validateForm(form, UserPage.FORM_CONSTRAINS);
+    const hasErrors = validateForm(form, CompanyPage.FORM_CONSTRAINS);
     if (hasErrors) return;
     const { id, ...values } = getFormData(form);
-    const usersApi = api.collection("users");
-    const promise = id ? usersApi.update(id, values) : usersApi.add(values);
+    const companiesApi = api.collection("companies");
+    const promise = id ? companiesApi.update(id, values) : companiesApi.add(values);
     promise.then((response) => {
       showNotification({
         title: "System message",
-        message: "User saved",
+        message: "Company saved",
       });
       if (id) return;
-      location.hash = `!/users/${response.result}`;
-      api.collection("users").getOne(response.result).then((response) => {
-        this.setState({ user: response.result });
+      location.hash = `!/companies/${response.result}`;
+      api.collection("companies").getOne(response.result).then((response) => {
+        this.setState({ company: response.result });
       });
     });
   }
 
-  renderForm(company) {
-    const node = this.querySelector(".company-form .content");
-    const innerHTML = `
-
+  renderUsers() {
+    const { users } = this.state;
+    if (!users) return "";
+    const body = users.map((user) => `
+      <li>
+        <a href="#!/users/${user.id}">${user.first_name} ${user.last_name}</a>
+      </li>
+    `).join("");
+    return `
+      <div class="table">
+        <h3>Employees</h3>
+        <ul class="employees">${body}</ul>
+      </div>
     `;
-    node.innerHTML = innerHTML;
   }
 
   render() {
     const { company } = this.state;
     if (!company) {
-      return `<div class="loading"></div>`;
+      return `<ul class="loading"></div>`;
     }
     return `
       <div class="container">
@@ -112,6 +120,7 @@ class CompanyPage extends View {
                 </div>
               </div>
             </div>
+            <div class="u-col-4">${this.renderUsers()}</div>
           </div>
         </form>
       </div>

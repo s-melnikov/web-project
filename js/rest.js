@@ -12,9 +12,9 @@ class REST {
     if (!params) return "";
     const query = Object.keys(params)
       .filter((key) => key && params[key])
-      .map((key) => `${key}=${encodeURIComponent(params[key])}`)
+      .map((key) => `${key}=${(typeof params[key] === "object") ? JSON.stringify(params[key]) : encodeURIComponent(params[key])}`)
       .join("&");
-    return `?${query}`;        
+    return `?${query}`;
   }
 
   request({ method, path, params, payload }) {
@@ -30,51 +30,51 @@ class REST {
         switch (response.status) {
           case REST.HTTPS_STATUSE_OK:
             return response.json();
-          default: 
+          default:
             throw response;
         }
       });
 }
 
   get(params) {
-    return this.request({ 
-      method: REST.METHOD_GET, 
-      path: `/${this.name}`, 
+    return this.request({
+      method: REST.METHOD_GET,
+      path: `/${this.name}`,
       params,
     });
   }
 
   getOne(id, params) {
-    return this.request({ 
-      method: REST.METHOD_GET, 
-      path: `/${this.name}/${id}`, 
+    return this.request({
+      method: REST.METHOD_GET,
+      path: `/${this.name}/${id}`,
       params,
     });
   }
 
   add(item) {
-    return this.request({ 
-      method: REST.METHOD_POST, 
-      path: `/${this.name}`, 
+    return this.request({
+      method: REST.METHOD_POST,
+      path: `/${this.name}`,
       payload: item,
     });
   }
 
   update(id, item) {
-    return this.request({ 
-      method: REST.METHOD_PUT, 
-      path: `/${this.name}/${id}`, 
+    return this.request({
+      method: REST.METHOD_PUT,
+      path: `/${this.name}/${id}`,
       payload: item,
     });
   }
 
   delete(id) {
-    return this.request({ 
-      method: REST.METHOD_DELETE, 
+    return this.request({
+      method: REST.METHOD_DELETE,
       path: `/${this.name}/${id}`,
     });
   }
-}    
+}
 REST.HTTPS_STATUSE_OK = 200;
 REST.METHOD_GET = "GET";
 REST.METHOD_POST = "POST";

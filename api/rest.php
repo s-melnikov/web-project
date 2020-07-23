@@ -2,6 +2,9 @@
 
 class REST {
 
+  /**
+   * Методы HTTP запроса
+   */
   static $METHOD_GET = 'GET';
 
   static $METHOD_POST = 'POST';
@@ -10,26 +13,44 @@ class REST {
 
   static $METHOD_DELETE = 'DELETE';
 
+  /**
+   * Конструктор
+   * $db_path - путь к файлу sqlite базы данных
+   */
   public function __construct($db_path) {
-    $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH); 
-    $path = trim($path, '/');
+    // Роутинг
+    $request_path = trim(
+      parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH),
+      '/'
+    );
 
-    $verb = strtoupper($_SERVER['REQUEST_METHOD']);
+    // Метод текущего запроса (GET, POST, ...)
+    $request_method = strtoupper($_SERVER['REQUEST_METHOD']);
 
-    $this->route = explode('/', $path);
+    // Сохраняем данные из роута в виде массива строк
+    // "api/users/9" -> array("api", "users", "9")
+    $this->route = explode('/', $request_path);
+
+    // Убираем первый элемент массива, который равен названию
+    // папки, где лежит скрипт API
     array_shift($this->route);
 
+    // Екземпляр класса для работы с базой данных
     $this->db = new PDO('sqlite:' . $db_path);
 
+    // Если в роуте ничего нет (запрос в корень API)
+    // возвращаем пустой ответ
     if (count($this->route) === 0) {
       $this->response(0);
     }
 
+    // Инсталяция базы данных
     if ($this->route[0] === 'install') {
       $this->install();
     }
 
-    switch ($verb) {
+    // Опредеаляем метод и вызываем его
+    switch ($request_method) {
       case self::$METHOD_GET:
         $this->get();
         break;
@@ -47,25 +68,49 @@ class REST {
     }
   }
 
+  /**
+   * Обработка GET запроса
+   */
   private function get() {
+    // Название сущности получаемой из базы (обязательно).
+    // Соответствует названию таблицы в базе данных.
     $entity = $this->route[0];
+
+    // ID сущности ()
     $id = isset($this->route[1]) ? $this->route[1] : null;
 
+    // Лимит выборки (опционально)
     $limit = params("limit");
+    // Сдвиг выборки (опционально)
     $offset = params("offset");
+    // Аттрибут, по которому надо отсортировать строки (опционально)
     $sortBy = params("sortBy");
+    // Порядок сортировки (desc - убывание, asc - возрастание) (опционально)
     $order = params("order");
+    // Поля, которые следует показать (опционально)
     $fields = params("fields", "*");
+    // Условие выборки (опционально)
+    $where = params("where");
 
+    // Формируем строку запроса в базу данных на языке SQL
     $sql = "SELECT $fields FROM $entity";
 
-    if ($id) $sql .= " WHERE id = $id";
+    if ($id) {
+      $sql .= " WHERE id = $id";
+    } else if ($where) {
+      $where = json_decode($where, true);
+      $temp = [];
+      foreach ($where as $key => $val) {
+        $temp[] = "$key = $val";
+      }
+      $sql .= " WHERE " . implode($temp, " AND ");
+    }
 
     if ($sortBy) {
       $sql .= " ORDER BY $sortBy COLLATE NOCASE";
 
       if ($order) {
-        $sql .= " $order";        
+        $sql .= " $order";
       }
     }
 
@@ -75,35 +120,55 @@ class REST {
       if ($limit && $offset) $sql .= " OFFSET $offset";
     }
 
-    $result = $this->db->query($sql);    
+    // Выполняем запрос
+    $result = $this->db->query($sql);
+
+    // Проверяем результат
     if ($result === false) {
+      // Ошибка, что то пошло не так
       $this->error('Wrong SQL: ' . $sql . ' Error: ' . $this->db->errorInfo()[2]);
     } else {
-      $data = [];
+      // Переменная для ответа
+      $response = [];
+      // Выбираем все строки в ввиде ассациотивного массива
       $result = $result->fetchAll(PDO::FETCH_ASSOC);
-      $data['result'] = $id ? $result[0] : $result;
-      if (!$id && $limit) {
+      // Добавляем в переменную
+      $response['result'] = $id ? $result[0] : $result;
+      // Если выборка нескольких строк и нет условия и есть лимит - считаем
+      // сколько вообще строк в базе данных
+      if (!$id && !$where && $limit) {
         $result = $this->db->query("SELECT COUNT(*) FROM $entity");
-        $data['count'] = $result->fetchColumn();
-      }      
-      $this->response($data);
-    }    
+        $response['count'] = $result->fetchColumn();
+      }
+      // Формируем ответ
+      $this->response($response);
+    }
   }
 
+  /**
+   * Обработка POST запроса
+   */
   private function post() {
+    // Название сущности получаемой из базы
     $entity = $this->route[0];
 
+    // Переменная для хранения названий столбцов
     $columns = [];
+
+    // Переменная для хранения названий значений
     $values = [];
+
+    // Получаем данные из тела запроса
     $data = $this->body();
 
+    // Извлекаем из тела запроса
     foreach ($data as $key => $val) {
       $columns[] = $key;
       $values[] = ":$key";
     }
 
     $columns = join($columns, ", ");
-    $values = join($values, ", "); 
+    $values = join($values, ", ");
 
     $sql = "INSERT INTO $entity ($columns) VALUES ($values)";
     $sth = $this->db->prepare($sql);
@@ -139,7 +204,7 @@ class REST {
 
   private function delete() {
     $entity = $this->route[0];
-    $id = $this->route[1];    
+    $id = $this->route[1];
 
     $sql = "DELETE FROM $entity WHERE id = $id";
     $result = $this->db->query($sql);
