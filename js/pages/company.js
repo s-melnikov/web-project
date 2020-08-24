@@ -58,7 +58,7 @@ class CompanyPage extends View {
       </li>
     `).join("");
     return `
-      <div class="table">
+      <div class="employees">
         <h3>Employees</h3>
         <ul class="employees">${body}</ul>
       </div>

@@ -84,7 +84,10 @@ class UserPage extends View {
                 </label>
 
                 <label class="u-mb">
-                  <span class="label">Company</span>
+                  <span class="label u-row">
+                    <span class="u-col">Company</span>
+                    <a href="#!/companies/${user.company}" class="u-col-auto">Open company page</a>
+                  </span>
                   <select name="company" value="${user.company}" ${options ? "" : "disabled"}>
                     <option value="">Select company</optipon>
                     ${options}

@@ -1,5 +1,6 @@
 <?php
 
+// Проверка версии PHP
 if (version_compare(PHP_VERSION, '5.6') < 0) {
   echo 'We need PHP 5.6 or higher, you are running ' . PHP_VERSION;
   exit;

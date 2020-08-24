@@ -95,6 +95,7 @@ class REST {
     // Формируем строку запроса в базу данных на языке SQL
     $sql = "SELECT $fields FROM $entity";
 
+    // Условие запроса в базу
     if ($id) {
       $sql .= " WHERE id = $id";
     } else if ($where) {
@@ -106,6 +107,7 @@ class REST {
       $sql .= " WHERE " . implode($temp, " AND ");
     }
 
+    // Порядок выборки
     if ($sortBy) {
       $sql .= " ORDER BY $sortBy COLLATE NOCASE";
 
@@ -114,6 +116,7 @@ class REST {
       }
     }
 
+    // Лимит
     if (!$id) {
       if ($limit) $sql .= " LIMIT $limit";
 
@@ -137,6 +140,7 @@ class REST {
       // Если выборка нескольких строк и нет условия и есть лимит - считаем
       // сколько вообще строк в базе данных
       if (!$id && !$where && $limit) {
+        // Выполняем запрос для подсчета общего колличества записей
         $result = $this->db->query("SELECT COUNT(*) FROM $entity");
         $response['count'] = $result->fetchColumn();
       }
@@ -161,73 +165,98 @@ class REST {
     // Получаем данные из тела запроса
     $data = $this->body();
 
-    // Извлекаем из тела запроса
+    // Извлекаем из тела запроса колонки и их значения
     foreach ($data as $key => $val) {
       $columns[] = $key;
       $values[] = ":$key";
     }
 
+    // Именя столбцов
     $columns = join($columns, ", ");
+    // Значения
     $values = join($values, ", ");
 
+    // Формируем строку запроса в базу данных на языке SQL
     $sql = "INSERT INTO $entity ($columns) VALUES ($values)";
+    // Подготавливаем строку запроса для выполнения
     $sth = $this->db->prepare($sql);
+    // Выполняем запрос
     if ($sth->execute($data) === false) {
+      // В случае ошибки выводим ее
       $this->error('Wrong SQL: ' . $sql . ' Error: ' . $this->db->errorInfo()[2]);
     } else {
+      // Формируем ответ
       $this->response(['result' => $this->db->lastInsertId()]);
     }
   }
 
   private function put() {
+    // Название сущности получаемой из базы
     $entity = $this->route[0];
+    // ID, если есть
     $id = $this->route[1];
 
+    // Столбцы
     $columns = [];
+    // Значения
     $values = [];
+    // Получаем дынные из тела HTTP запроса
     $data = $this->body();
 
+    // Пары ключ = значение
     foreach ($data as $key => $val) {
       $columns[] = "$key = :$key";
     }
 
     $columns = join($columns, ", ");
 
+    // Формируем строку запроса в базу данных на языке SQL
     $sql = "UPDATE $entity SET $columns WHERE id = $id";
+    // Подготавливаем строку запроса для выполнения
     $sth = $this->db->prepare($sql);
+    // Выполняем запрос
     if ($sth->execute($data) === false) {
+      // В случае ошибки выводим ее
       $this->error('Wrong SQL: ' . $sql . ' Error: ' . $this->db->errorInfo()[2]);
     } else {
+      // Формируем ответ
       $this->response(['result' => true]);
     }
   }
 
   private function delete() {
+    // Название сущности получаемой из базы
     $entity = $this->route[0];
+    // ID, если есть
     $id = $this->route[1];
 
+    // Формируем строку запроса в базу данных на языке SQL
     $sql = "DELETE FROM $entity WHERE id = $id";
+    // Выполняем запрос
     $result = $this->db->query($sql);
 
     if ($result === false) {
+      // В случае ошибки выводим ее
       $this->error('Wrong SQL: ' . $sql . ' Error: ' . $this->db->errorInfo()[2]);
-    } else {
+    } else {      
+      // Формируем ответ
       $this->response(['result' => true]);
     }
   }
 
+  // Устанавливаем дамп базы данных
   private function install() {
     $sql = file_get_contents('db/dump.sql');
     $this->db->exec($sql);
     exit;
   }
 
-  # maps directly to json_encode, but renders JSON headers as well
+  // Вывод JSON вместе с соответстыующими заголовками
   private function json() {
     $json = call_user_func_array('json_encode', func_get_args());
     $err = json_last_error();
 
-    # trigger a user error for failed encodings
+    // Обработка ошибки
     if ($err !== JSON_ERROR_NONE) {
       throw new RuntimeException(
         "JSON encoding failed [{$err}].",
@@ -239,17 +268,19 @@ class REST {
     print $json;
   }
 
-  # response
+  // Вывод ответа
   private function response($data) {
     $this->json($data);
     exit;
   }
 
+  // Обработчик ошибки
   private function error($error) {
     http_response_code(500);
     $this->response([ 'error' => $error ]);
   }
 
+  // Получение тела запроса
   private function body() {
     $content = file_get_contents('php://input');
     return json_decode($content, true);
